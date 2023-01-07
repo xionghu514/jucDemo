@@ -15,6 +15,6 @@ public class ThreadTest {
 class MyThread extends Thread {
     @Override
     public void run() {
-        System.out.println("继承Thread类创建线程");
+        System.out.println("继承Thread类创建线程" + Thread.currentThread().getName());
     }
 }
