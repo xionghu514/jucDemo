@@ -1,5 +1,7 @@
 package com.atguigu.juc;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * @Description:
  * @Author: xionghu514
@@ -12,6 +14,7 @@ public class LambadTest {
     public static void main(String[] args) {
 //        Test test = new Test();
 //        System.out.println("test.add(1,2) = " + test.add(1, 2));
+        new ReentrantLock().lock();
         Foo foo = (int x, int y)->  x + y;
 
         System.out.println(foo.add(1, 2));

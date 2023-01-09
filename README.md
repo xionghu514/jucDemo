@@ -283,8 +283,150 @@ Executor接口是顶层接口，只有一个execute方法，过于简单。通�
 
 
 
+## CAS
 
+CAS：Compare and Swap。比较并交换。是实现并发算法时常用到的一种技术。CAS操作有3个基本参数：内存地址V，旧值A，新值B。它的作用是将指定内存地址V的内容与所给的旧值A相比，如果相等，则将其内容替换为指令中提供的新值B；如果不等，则更新失败。
+
+**CAS是解决多线程并发安全问题的一种乐观锁算法。**当且仅当旧的预期值A和内存值V相同时，将内存值V修改为B，否则什么都不做或者重来。这种重来重试的行为称为：自旋
+
+Unsafe类是CAS的核心类，提供**硬件级别的原子操作**（目前所有CPU基本都支持硬件级别的CAS操作）我们一般不操作Unsafe类，而是操作封装好的原子类。
+
+![image-20230109104100571](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109104100571.png)
+
+### Unsafe代码示例：
+
+![image-20230109104335828](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109104335828.png)
+
+### 基本代码演示
+
+![image-20230109104847989](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109104847989.png)
+
+结果分析：
+
+```java
+第一次更新：i的值（1）和预期值（1）相同，所以执行了更新操作，把i的值更新为200
+第二次更新：i的值（200）和预期值（1）不同，所以不再执行更新操作
+第三次更新：i的值（200）和预期值（1）相同，所以执行了更新操作，把i的值更新为300
+```
+
+### 缺点
+
+**开销大**：在并发量比较高的情况下，如果反复尝试更新某个变量，却又一直更新不成功，会给CPU带来较大的压力
+
+**ABA问题**：当变量从A修改为B再修改回A时，变量值等于期望值A，但是无法判断是否修改，CAS操作在ABA修改后依然成功。 
+
+**不能保证代码块的原子性**：CAS机制所保证的只是一个变量的原子性操作，而不能保证整个代码块的原子性。
 
 
 
 ## AQS
+
+AbstractQueuedSynchronizer抽象队列同步器简称AQS，它是实现同步器的基础组件（框架），juc下面Lock（ReentrantLock、ReentrantReadWriteLock等）的实现以及一些并发工具类（Semaphore、CountDownLatch、CyclicBarrier等）就是通过AQS来实现的。具体用法是通过继承AQS实现其模板方法，然后将子类作为同步组件的内部类。
+
+AQS的重要性：它是JUC包下大部分类的底层实现原理，是JUC的基石，主要用来解决锁分配给谁的问题
+
+![image-20230109105204463](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105204463.png)
+
+![image-20230109105153883](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105153883.png)
+
+AQS = FIFO+state 实现
+
+整体就是一个抽象的FIFO队列来完成资源获取线程的排队工作，并通过一个int类型变量表示持有锁的状态
+
+### 框架结构
+
+![image-20230109105302235](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105302235.png)
+
+AQS真实的框架结构如下：
+
+![image-20230109105323961](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105323961.png)
+
+AQS维护了一个volatile语义(支持多线程下的可见性)的共享资源变量**state**和一个FIFO（first-in-first-out）**线程等待队列**(多线程竞争state资源被阻塞时，会进入此队列)。
+
+### 基于AQS实现锁的思路
+
+AQS将大部分的同步逻辑均已经实现好，继承的自定义同步器只需要实现state的获取(acquire)和释放(release)的逻辑代码就可以，主要包括下面方法：
+
+- tryAcquire(int)：独占方式。尝试获取资源，成功则返回true，失败则返回false。
+- tryRelease(int)：独占方式。尝试释放资源，成功则返回true，失败则返回false。
+- tryAcquireShared(int)：共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。
+- tryReleaseShared(int)：共享方式。尝试释放资源，如果释放后允许唤醒后续等待结点返回true，否则返回false。
+- isHeldExclusively()：该线程是否正在独占资源。只有用到condition才需要去实现它。
+
+也就是说：
+
+​		通过AQS可以实现独占锁（只有一个线程可以获取到锁，如：ReentrantLock），也可以实现共享锁（多个线程都可以获取到锁Semaphore/CountDownLatch等）
+
+### JUC基石
+
+![image-20230109105434852](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105434852.png)
+
+### 基于AQS实现独占锁
+
+![image-20230109105755387](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105755387.png)
+
+
+
+在分析Mutex类中会涉及到lock方法的实现，其底层实现为如下
+
+![image-20230109105844339](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105844339.png)
+
+### ReentrantLock底层原理
+
+![image-20230109105918349](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105918349.png)
+
+在ReentrantLock类中包含了3个AQS的实现类：
+
+1. 抽象类Sync
+2. 非公平锁实现类NonfaireSync
+3. 公平锁实现类FairSync
+
+![image-20230109105951143](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105951143.png)
+
+#### Sync抽象类
+
+##### nonfairTryAcquire
+
+该方法是Sync类自定义的一个方法，并不是重写的AQS的tryAcquire方法
+
+非公平的获取：其实就是不管现在等待队列的情况，我先自己尝试获取下。成功了最好，不成功就入队等待
+
+![image-20230109110201790](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109110201790.png)
+
+##### tryRelease
+
+释放锁  该方法是重写AQS的tryRelease方法
+
+1. 只有当前持有锁的线程才能做释放锁操作，不然会抛IllegalMonitorStateException
+2. 由于锁是可重入的，释放锁其实就是state - 1， 如果最终state == 0,把获取锁的线程设置为空。
+3. 如果锁空闲，返回true, 否则返回false
+
+![0212 非公平锁的释放](G:\上课视频\JUC课件\0718视频_下午\视频_下午\图片\0212 非公平锁的释放.png)
+
+#### NonfairSync
+
+该类为同步对象的非公平锁
+
+##### TryAcquire
+
+该方法是重写AQS类中的tryAcquire方法，实际上调用的是Sync类中的nonfairTryAcquire方法
+
+![image-20230109110646233](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109110646233.png)
+
+##### lock
+
+1. 不公平的lock, 进lock方法，啥都不判断，直接尝试通过cas修改锁状态。
+2. 如果修改成功，说明获取到了锁，设置当前获取锁的线程为自己，然后返回
+3. 如果修改失败，通过acquire方法按部就班的获取锁或入队列等待。
+
+![image-20230109110715493](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109110715493.png)
+
+#### FairSync
+
+同步对象的公平锁
+
+##### tryAcquire
+
+和非公平的版本相比，唯一的区别就是这里多做了一个判断 **!hasQueuedPredecessors()**
+
+![image-20230109110810994](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109110810994.png)
