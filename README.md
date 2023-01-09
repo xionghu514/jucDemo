@@ -291,15 +291,15 @@ CAS：Compare and Swap。比较并交换。是实现并发算法时常用到的�
 
 Unsafe类是CAS的核心类，提供**硬件级别的原子操作**（目前所有CPU基本都支持硬件级别的CAS操作）我们一般不操作Unsafe类，而是操作封装好的原子类。
 
-![image-20230109104100571](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109104100571.png)
+![image-20230109104100571](https://oss.yiki.tech/xh/image-20230109104100571.png)
 
 ### Unsafe代码示例：
 
-![image-20230109104335828](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109104335828.png)
+![image-20230109104335828](https://oss.yiki.tech/xh/image-20230109104335828.png)
 
 ### 基本代码演示
 
-![image-20230109104847989](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109104847989.png)
+![image-20230109104847989](https://oss.yiki.tech/xh/image-20230109104847989.png)
 
 结果分析：
 
@@ -325,9 +325,9 @@ AbstractQueuedSynchronizer抽象队列同步器简称AQS，它是实现同步器
 
 AQS的重要性：它是JUC包下大部分类的底层实现原理，是JUC的基石，主要用来解决锁分配给谁的问题
 
-![image-20230109105204463](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105204463.png)
+![image-20230109105204463](https://oss.yiki.tech/xh/image-20230109105204463.png)
 
-![image-20230109105153883](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105153883.png)
+![image-20230109105153883](https://oss.yiki.tech/xh/image-20230109105153883.png)
 
 AQS = FIFO+state 实现
 
@@ -335,11 +335,11 @@ AQS = FIFO+state 实现
 
 ### 框架结构
 
-![image-20230109105302235](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105302235.png)
+![image-20230109105302235](https://oss.yiki.tech/xh/image-20230109105302235.png)
 
 AQS真实的框架结构如下：
 
-![image-20230109105323961](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105323961.png)
+![image-20230109105323961](https://oss.yiki.tech/xh/image-20230109105323961.png)
 
 AQS维护了一个volatile语义(支持多线程下的可见性)的共享资源变量**state**和一个FIFO（first-in-first-out）**线程等待队列**(多线程竞争state资源被阻塞时，会进入此队列)。
 
@@ -359,21 +359,21 @@ AQS将大部分的同步逻辑均已经实现好，继承的自定义同步器�
 
 ### JUC基石
 
-![image-20230109105434852](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105434852.png)
+![image-20230109105434852](https://oss.yiki.tech/xh/image-20230109105434852.png)
 
 ### 基于AQS实现独占锁
 
-![image-20230109105755387](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105755387.png)
+![image-20230109105755387](https://oss.yiki.tech/xh/image-20230109105755387.png)
 
 
 
 在分析Mutex类中会涉及到lock方法的实现，其底层实现为如下
 
-![image-20230109105844339](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105844339.png)
+![image-20230109105844339](https://oss.yiki.tech/xh/image-20230109105844339.png)
 
 ### ReentrantLock底层原理
 
-![image-20230109105918349](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105918349.png)
+![image-20230109105918349](https://oss.yiki.tech/xh/image-20230109105918349.png)
 
 在ReentrantLock类中包含了3个AQS的实现类：
 
@@ -381,7 +381,7 @@ AQS将大部分的同步逻辑均已经实现好，继承的自定义同步器�
 2. 非公平锁实现类NonfaireSync
 3. 公平锁实现类FairSync
 
-![image-20230109105951143](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109105951143.png)
+![image-20230109105951143](https://oss.yiki.tech/xh/image-20230109105951143.png)
 
 #### Sync抽象类
 
@@ -391,7 +391,7 @@ AQS将大部分的同步逻辑均已经实现好，继承的自定义同步器�
 
 非公平的获取：其实就是不管现在等待队列的情况，我先自己尝试获取下。成功了最好，不成功就入队等待
 
-![image-20230109110201790](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109110201790.png)
+![image-20230109110201790](https://oss.yiki.tech/xh/image-20230109110201790.png)
 
 ##### tryRelease
 
@@ -401,7 +401,7 @@ AQS将大部分的同步逻辑均已经实现好，继承的自定义同步器�
 2. 由于锁是可重入的，释放锁其实就是state - 1， 如果最终state == 0,把获取锁的线程设置为空。
 3. 如果锁空闲，返回true, 否则返回false
 
-![0212 非公平锁的释放](G:\上课视频\JUC课件\0718视频_下午\视频_下午\图片\0212 非公平锁的释放.png)
+![0212 非公平锁的释放](https://oss.yiki.tech/xh/0212%20%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81%E7%9A%84%E9%87%8A%E6%94%BE.png)
 
 #### NonfairSync
 
@@ -411,7 +411,7 @@ AQS将大部分的同步逻辑均已经实现好，继承的自定义同步器�
 
 该方法是重写AQS类中的tryAcquire方法，实际上调用的是Sync类中的nonfairTryAcquire方法
 
-![image-20230109110646233](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109110646233.png)
+![image-20230109110646233](https://oss.yiki.tech/xh/image-20230109110646233.png)
 
 ##### lock
 
@@ -419,7 +419,7 @@ AQS将大部分的同步逻辑均已经实现好，继承的自定义同步器�
 2. 如果修改成功，说明获取到了锁，设置当前获取锁的线程为自己，然后返回
 3. 如果修改失败，通过acquire方法按部就班的获取锁或入队列等待。
 
-![image-20230109110715493](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109110715493.png)
+![image-20230109110715493](https://oss.yiki.tech/xh/image-20230109110715493.png)
 
 #### FairSync
 
@@ -429,4 +429,4 @@ AQS将大部分的同步逻辑均已经实现好，继承的自定义同步器�
 
 和非公平的版本相比，唯一的区别就是这里多做了一个判断 **!hasQueuedPredecessors()**
 
-![image-20230109110810994](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230109110810994.png)
+![image-20230109112910741](https://oss.yiki.tech/xh/image-20230109112910741.png)
